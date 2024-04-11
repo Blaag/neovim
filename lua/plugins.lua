@@ -123,7 +123,7 @@ require("lazy").setup({
     {
         -- Mason LSP config
         -- This MUST come after mason and before lspconfig
-        "williambowman/mason-lspconfig.nvim",
+        "williamboman/mason-lspconfig.nvim",
         config = function()
             require("mason-lspconfig").setup({
             })
