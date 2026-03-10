@@ -1,0 +1,86 @@
+-- ========================================================================== --
+--                               BASIC SETTINGS                               --
+-- ========================================================================== --
+vim.g.mapleader = " "
+vim.opt.number = true
+vim.opt.relativenumber = true
+vim.opt.expandtab = true
+vim.opt.termguicolors = true
+-- Make the AI suggestions a clear gray color
+vim.api.nvim_set_hl(0, "NeoCodeiumSuggestion", { link = "Comment" })
+
+-- ========================================================================== --
+--                           PLUGIN BOOTSTRAPPING                             --
+-- ========================================================================== --
+local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
+if not vim.loop.fs_stat(lazypath) then
+  vim.fn.system({ "git", "clone", "--filter=blob:none", "https://github.com/folke/lazy.nvim.git", "--branch=stable", lazypath })
+end
+vim.opt.rtp:prepend(lazypath)
+
+-- ========================================================================== --
+--                              PLUGIN LIST                                   --
+-- ========================================================================== --
+require("lazy").setup({
+  -- 1. THE AUTO-DETECT: Sleuth (Detects 2 vs 4 spaces automatically)
+  { "tpope/vim-sleuth" },
+
+  -- 2. THE THEME: Kanagawa
+  {
+    "rebelot/kanagawa.nvim",
+    priority = 1000,
+    config = function()
+      vim.cmd("colorscheme kanagawa")
+    end,
+  },
+
+  -- 3. THE AUTOCOMPLETE: Neocodeium (The modern replacement)
+  {
+    "monkoose/neocodeium",
+    config = function()
+      require("neocodeium").setup()
+      vim.keymap.set("i", "<Tab>", function() require("neocodeium").accept() end)
+    end,
+  },
+
+  -- 4. THE AGENT: OpenCode
+  {
+    "sudo-tee/opencode.nvim",
+    dependencies = { "nvim-lua/plenary.nvim", "MunifTanjim/nui.nvim" },
+    config = function()
+      require("opencode").setup({ binary = "opencode" })
+      vim.keymap.set("n", "<leader>o", ":Opencode<CR>")
+    end,
+  },
+
+  -- 5. Treesitter
+  {
+    "nvim-treesitter/nvim-treesitter",
+    build = ":TSUpdate", -- Automatically install/update parsers
+    config = function()
+      require("nvim-treesitter.config").setup({
+        -- Install parsers for the languages you use
+        ensure_installed = { "lua", "python", "terraform", "bash", "markdown" },
+        
+        highlight = {
+          enable = true, -- This replaces the old, slow regex highlighting
+        },
+        indent = {
+          enable = true, -- Uses the tree to give you perfect indentation
+        },
+      })
+    end,
+  },
+  -- 6. Telescope
+  {
+      "nvim-telescope/telescope.nvim",
+      dependencies = { "nvim-lua/plenary.nvim" },
+      config = function()
+        local builtin = require('telescope.builtin')
+        -- Search your keymaps
+        vim.keymap.set('n', '<leader>?', builtin.keymaps, { desc = "Search Keymaps" })
+        -- Search all available commands (: commands)
+        vim.keymap.set('n', '<leader>:', builtin.commands, { desc = "Search Commands" })
+      end,
+   }
+})
